@@ -1,0 +1,63 @@
+def arithmetic_arranger(problems, show_answers=False):
+    # Define variable to hold four spaces
+    FOUR_SPACES = "    "
+    if len(problems) > 5:
+        return 'Error: Too many problems.'
+    # Define lists to hold variables of problems as well as four lines for output
+    first_list, operators_list, second_list = [], [], []
+    first_line, second_line, third_line, fourth_line = '', '', '', ''
+    for problem in problems:
+        x = problem.split()
+        # Define error cases
+        if x[1] != '+' and x[1] != '-':
+            return "Error: Operator must be '+' or '-'."
+        if not x[0].isdigit() or not x[2].isdigit():
+            return 'Error: Numbers must only contain digits.'
+        if len(x[0]) > 4 or len(x[2]) > 4:
+            return 'Error: Numbers cannot be more than four digits.'
+        first_list.append(x[0])
+        operators_list.append(x[1])
+        second_list.append(x[2])
+    # For each individual problem in the list
+    for i in range(len(first_list)):
+        if len(first_list[i]) < len(second_list[i]):
+            first_line += repeat_char(abs(len(first_list[i]) - len(second_list[i])), ' ')
+        # Always append two spaces to account for the operator and space in second row
+        first_line += '  ' + first_list[i]
+        second_line += operators_list[i] + ' '
+        if len(second_list[i]) < len(first_list[i]):
+            second_line += repeat_char(abs(len(first_list[i]) - len(second_list[i])), ' ')
+        second_line += second_list[i]
+        # Write enough dashes to cover the second row
+        third_line += '--' + repeat_char(max(len(first_list[i]), len(second_list[i])), '-')
+        first_number, second_number = int(first_list[i]), int(second_list[i])
+        sum = first_number + second_number
+        diff = first_number - second_number
+        # Define the spacing of the fourth row
+        if operators_list[i] == '+':
+            if len(str(sum)) > max(len(first_list[i]), len(second_list[i])):
+                fourth_line += repeat_char(len(str(sum)) - max(len(first_list[i]), len(second_list[i])), ' ') + f'{sum}'
+            else:
+                fourth_line += repeat_char(2, ' ') + f'{sum}'
+        else:
+            if len(str(diff)) > max(len(first_list[i]), len(second_list[i])):
+                fourth_line += repeat_char(len(str(diff)) - max(len(first_list[i]), len(second_list[i])), ' ') + f'{diff}'
+            else:
+                fourth_line += repeat_char(2, ' ') + f'{diff}'
+        # Add four spaces between each problem
+        if i != len(first_list) - 1:
+            first_line += FOUR_SPACES
+            second_line += FOUR_SPACES
+            third_line += FOUR_SPACES
+            fourth_line += FOUR_SPACES
+    if show_answers:
+        return first_line + '\n' + second_line + '\n' + third_line + '\n' + fourth_line
+    else:
+        return first_line + '\n' + second_line + '\n' + third_line
+
+# Function to help repeated number of spaces or dashes
+def repeat_char(num, char):
+    x = ''
+    for i in range(num):
+        x += char
+    return x

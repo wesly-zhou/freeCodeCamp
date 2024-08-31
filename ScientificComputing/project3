@@ -1,0 +1,102 @@
+import math
+
+class Category:
+    def __init__(self, category):
+        self.category = category
+        self.ledger = []
+        self.current_balance = 0
+
+    def __str__(self):
+        title_line = '*' * ((30 - len(self.category)) // 2) + f'{self.category}' + '*' * ((30 - len(self.category)) // 2) + '\n'
+        ledger_items = ''
+        for item in self.ledger:
+            left = item['description'][:23]
+            right = str(item['amount'])
+            if '.' not in right:
+                right += '.00'
+            elif right[-2] == '.':
+                right += '0'
+            right = right[:7]
+            spaces = ' ' * (30 - len(left) - len(right))
+            ledger_items += left + spaces + right + '\n'
+        category_total = f'Total: {self.current_balance}'
+        return title_line + ledger_items + category_total
+
+    def deposit(self, amount, description=''):
+        self.ledger.append({"amount": amount, "description": description})
+        self.current_balance += amount
+
+    def withdraw(self, amount, description=''):
+        if not self.check_funds(amount):
+            return False
+        self.ledger.append({"amount": -amount, "description": description})
+        self.current_balance -= amount
+        return True
+    
+    def get_balance(self):
+        return self.current_balance
+
+    def transfer(self, amount, new_category):
+        if not self.check_funds(amount):
+            return False
+        self.withdraw(amount, f'Transfer to {new_category.category}')
+        new_category.deposit(amount, f'Transfer from {self.category}')
+        return True
+
+    def check_funds(self, amount):
+        if amount > self.current_balance:
+            return False
+        return True
+
+def create_spend_chart(categories):
+    hashmap = {}
+    total_sum = 0
+    for category in categories:
+        amount = 0
+        for item in category.ledger:
+            if item['amount'] < 0:
+                amount -= item['amount']
+        hashmap[category] = amount
+        total_sum += amount
+    for key in hashmap:
+        # Out of 10 to help with array indexing
+        percentage = (hashmap[key] / total_sum) * 10
+        hashmap[key] = math.floor(percentage)
+
+    title = 'Percentage spent by category\n'
+
+    markers = [[False] * len(categories) for _ in range(11)]
+    for i in range(len(categories)):
+        for j in range(10 - hashmap[categories[i]], 11):
+            markers[j][i] = True
+
+    graph = []
+    y_axis = ['100|', ' 90|', ' 80|', ' 70|', ' 60|', ' 50|', ' 40|', ' 30|', ' 20|', ' 10|', '  0|']
+    for i in range(11):
+        row_body = ''
+        for j in range(len(categories)):
+            row_body += space_char() if markers[i][j] else repeated_char(' ', 3)
+        graph.append(y_axis[i] + row_body  + ' \n')
+    body = ''.join(graph)
+
+    x_axis = []
+    x_axis.append(repeated_char(' ', 4) + repeated_char('-', 3 * len(categories) + 1) + '\n')
+    names = [category.category for category in categories]
+    names.sort(key = lambda x:len(x))
+    index = 0
+    for i in range(len(names[-1])):
+        row_axis = repeated_char(' ', 4)
+        for j in range(len(categories)):
+            row_axis += space_char(categories[j].category[index]) if index < len(categories[j].category) else space_char(' ')
+        index += 1
+        x_axis.append(row_axis + ' ')
+        if index != len(names[-1]):
+            x_axis.append('\n')
+    labels = ''.join(x_axis)
+    return title + body + labels
+
+def space_char(char = 'o'):
+    return f' {char} '
+
+def repeated_char(char, num):
+    return char * num

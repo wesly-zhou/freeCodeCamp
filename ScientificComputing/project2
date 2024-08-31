@@ -1,0 +1,56 @@
+def add_time(start, duration, day=''):
+    # Define AM and PM
+    period = ['AM', 'PM']
+    # Days of the week, default '' day to catch optional parameter
+    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday', '']
+    # Define a new list for case insensitive matching of day
+    case_ins_days = [x.casefold() for x in days]
+    index = case_ins_days.index(day.casefold())
+    # Split the start and duration times
+    mod_start = start.replace(' ', ':')
+    x = mod_start.split(':')
+    y = duration.split(':')
+    z = period.index(f'{x[2]}')
+    # Get the new hour and minutes by adding the duration to the start
+    new_hour = int(x[0]) + int(y[0])
+    new_min = int(x[1]) + int(y[1])
+    new_period = period[z]
+    # First change the minutes to be less than 60
+    if new_min >= 60:
+        new_hour += 1
+        new_min %= 60
+    days_passed_message = ''
+    # If the hour number is greater than 12
+    if new_hour >= 12:
+        interval = new_hour // 12
+        days_passed = 0
+        new_hour %= 12
+        i = 0
+        while i < interval:
+            # Define the number of days that have passed based on PM changing to AM
+            if period[z] == 'PM' and period[(z+1) % 2] == 'AM':
+                days_passed += 1
+                index = (index + 1) % 7
+            z = (z + 1) % 2
+            i = i + 1
+        # Get the final period (AM/PM) that we end up in
+        new_period = period[z]
+        # Identify the message printed to console based on number of days that pass
+        if days_passed == 1:
+            days_passed_message = ' (next day)'
+        elif days_passed > 1:
+            days_passed_message = f' ({days_passed} days later)'
+    # Since we used an if statement and not a while statement, the last hour being 12 will be reduced to 0, therefore set the hour to be 12 if it is at 0
+    if new_hour == 0:
+        new_hour = 12
+    # Return message based on if day parameter is given and if the minute is less than 10
+    if day == '':
+        if new_min < 10:
+            return f'{new_hour}:0{new_min} {new_period}{days_passed_message}'
+        else:
+            return f'{new_hour}:{new_min} {new_period}{days_passed_message}'
+    else:
+        if new_min < 10:
+            return f'{new_hour}:0{new_min} {new_period}, {days[index]}{days_passed_message}'
+        else:
+            return f'{new_hour}:{new_min} {new_period}, {days[index]}{days_passed_message}'

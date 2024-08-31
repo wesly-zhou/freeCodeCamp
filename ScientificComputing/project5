@@ -1,0 +1,34 @@
+import copy
+import random
+
+class Hat:
+    def __init__(self, **kwargs):
+        self.contents = []
+        self.removed = []
+        for color, count in kwargs.items():
+            for _ in range(count):
+                self.contents.append(f'{color}')
+    
+    def draw(self, num):
+        if num > len(self.contents):
+            self.removed = copy.copy(self.contents)
+            self.contents.clear()
+            return self.removed
+        for _ in range(num):
+            self.removed += [self.contents.pop(random.randint(0, len(self.contents) - 1))]
+        return self.removed
+
+def experiment(hat, expected_balls, num_balls_drawn, num_experiments):
+    success = 0
+    goal = []
+
+    for color, count in expected_balls.items():
+        for _ in range(count):
+            goal.append(f'{color}')
+
+    for _ in range(num_experiments):
+        hat_copy = copy.deepcopy(hat)
+        drawn = hat_copy.draw(num_balls_drawn)
+        if all(drawn.count(color) >= goal.count(color) for color in set(goal)):
+            success += 1
+    return success / num_experiments
