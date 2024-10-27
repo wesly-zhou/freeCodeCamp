@@ -1,3 +1,5 @@
+# Project 3: Budget App
+
 import math
 
 class Category:
@@ -100,3 +102,19 @@ def space_char(char = 'o'):
 
 def repeated_char(char, num):
     return char * num
+
+"""
+Example usage:
+food = Category('Food')
+food.deposit(1000, 'deposit')
+food.withdraw(650, 'groceries')
+clothing = Category('Clothing')
+clothing.deposit(1000)
+clothing.withdraw(200)
+auto = Category('Auto')
+auto.deposit(1000)
+auto.withdraw(100)
+
+categories = [food, clothing, auto]
+print(create_spend_chart(categories))
+"""

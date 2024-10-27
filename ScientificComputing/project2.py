@@ -1,3 +1,5 @@
+# Project 2: Time Calculator
+
 def add_time(start, duration, day=''):
     # Define AM and PM
     period = ['AM', 'PM']
@@ -54,3 +56,8 @@ def add_time(start, duration, day=''):
             return f'{new_hour}:0{new_min} {new_period}, {days[index]}{days_passed_message}'
         else:
             return f'{new_hour}:{new_min} {new_period}, {days[index]}{days_passed_message}'
+
+"""
+Example usage:
+print(add_time('3:30 PM', '20:12', 'TuesdaY'))
+"""

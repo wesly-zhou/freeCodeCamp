@@ -1,3 +1,5 @@
+# Project 1: Arithmetic Formatter
+
 def arithmetic_arranger(problems, show_answers=False):
     # Define variable to hold four spaces
     FOUR_SPACES = "    "
@@ -61,3 +63,8 @@ def repeat_char(num, char):
     for i in range(num):
         x += char
     return x
+
+"""
+Example usage:
+print(f'\n{arithmetic_arranger(["3 + 855", "988 + 40"], True)}')
+"""
