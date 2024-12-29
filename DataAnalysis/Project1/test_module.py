@@ -1,6 +1,7 @@
+# Testing module from the freeCodeCamp starter code
+
 import unittest
 import mean_var_std
-
 
 # the test case
 class UnitTests(unittest.TestCase):
