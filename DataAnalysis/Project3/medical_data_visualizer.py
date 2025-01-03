@@ -32,27 +32,27 @@ def draw_cat_plot():
     fig.savefig('catplot.png')
     return fig
 
-
-# 10
 def draw_heat_map():
-    # 11
-    df_heat = None
+    """
+    Function to draw a heat map for the data. Plots a correlation matrix.
+    """
+    # Clean the data by filtering patient segments that represent incorrect data
+    df_heat = df[
+        (df['ap_lo'] <= df['ap_hi']) &
+        (df['height'] >= df['height'].quantile(0.025)) &
+        (df['height'] <= df['height'].quantile(0.975)) &
+        (df['weight'] >= df['weight'].quantile(0.025)) &
+        (df['weight'] <= df['weight'].quantile(0.975))    
+        ]
 
-    # 12
-    corr = None
+    # Calculate the correlation matrix of the data
+    corr = df_heat.corr()
 
-    # 13
-    mask = None
+    # Generate a mask for the upper triangle
+    mask = np.triu(np.ones_like(corr, dtype=bool))
 
-
-
-    # 14
-    fig, ax = None
-
-    # 15
-
-
-
-    # 16
+    # Set up the matplotlib figure and plot using sns.heatmap
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(corr, annot=True, fmt="0.1f", square=True, linewidths=0.5, mask=mask) 
     fig.savefig('heatmap.png')
     return fig
