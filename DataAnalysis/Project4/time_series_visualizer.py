@@ -4,19 +4,26 @@ import seaborn as sns
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-# Import data (Make sure to parse dates. Consider setting index column to 'date'.)
-df = None
+# Import data and set the date column as the index
+df = pd.read_csv('fcc-forum-pageviews.csv', parse_dates=['date'])
+df.set_index('date', inplace=True)
 
-# Clean data
-df = None
-
+# Clean data by removing page views in the bottom 2.5% or the top 2.5% of the dataset
+df = df[
+    (df['value'] >= df['value'].quantile(0.025)) &
+    (df['value'] <= df['value'].quantile(0.975))
+]
 
 def draw_line_plot():
-    # Draw line plot
+    """
+    Draw a line plot showing the number of page views for each date in the dataset.
+    """
+    fig, ax = plt.subplots(figsize=(18, 6))
+    ax.plot(df.index, df['value'], 'r-')
 
-
-
-
+    ax.set_title('Daily freeCodeCamp Forum Page Views 5/2016-12/2019')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Page Views')
 
     # Save image and return fig (don't change this part)
     fig.savefig('line_plot.png')
