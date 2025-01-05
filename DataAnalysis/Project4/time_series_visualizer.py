@@ -30,14 +30,23 @@ def draw_line_plot():
     return fig
 
 def draw_bar_plot():
+    """
+    Draw a bar plot showing the average number of page views for each month grouped by year.
+    """
     # Copy and modify data for monthly bar plot
-    df_bar = None
+    # Group the data by year and reshape the data using unstack such that months are columns
+    df_bar = df.groupby([df.index.year, df.index.month]).mean().unstack()
 
-    # Draw bar plot
+    fig, ax = plt.subplots(figsize=(8, 7))
+    df_bar.plot(ax = ax, kind='bar')
 
+    ax.set_xlabel('Years')
+    ax.set_ylabel('Average Page Views')
 
-
-
+    # Set the legend by explicitly defining the months as labels
+    handles, labels = ax.get_legend_handles_labels()
+    new_labels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    ax.legend(handles = handles, labels = new_labels, title = 'Months', loc = 'upper left')
 
     # Save image and return fig (don't change this part)
     fig.savefig('bar_plot.png')
