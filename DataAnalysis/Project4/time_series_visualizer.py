@@ -53,17 +53,40 @@ def draw_bar_plot():
     return fig
 
 def draw_box_plot():
+    """
+    Draw two adjacent box plots to show how the values are distributed within a given year or month and how it compares over time.
+    """
+    # Used to override error from Seaborn using an outdated alias
+    import numpy as np
+    np.float = float
+
     # Prepare data for box plots (this part is done!)
     df_box = df.copy()
     df_box.reset_index(inplace=True)
     df_box['year'] = [d.year for d in df_box.date]
     df_box['month'] = [d.strftime('%b') for d in df_box.date]
 
-    # Draw box plots (using Seaborn)
+    # Explicitly define the orders of the months as well as the ticks on the y-axis
+    month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    df_box['month'] = pd.Categorical(df_box['month'], categories = month_order, ordered = True)
+    y_ticks = range(0, 220000, 20000)
 
+    # Create a figure with 2 axes, one row and two columns
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 8))
 
+    sns.boxplot(ax = ax1, x = 'year', y = 'value', data = df_box, linewidth = 0.75)
+    ax1.set_title("Year-wise Box Plot (Trend)")
+    ax1.set_xlabel("Year")
+    ax1.set_ylabel("Page Views")
+    ax1.set_yticks(y_ticks)
+    ax1.set_yticklabels([f'{tick}' for tick in y_ticks])
 
-
+    sns.boxplot(ax = ax2, x = 'month', y = 'value', data = df_box, linewidth = 0.75)
+    ax2.set_title("Month-wise Box Plot (Seasonality)")
+    ax2.set_xlabel("Month")
+    ax2.set_ylabel("Page Views")
+    ax2.set_yticks(y_ticks)
+    ax2.set_yticklabels([f'{tick}' for tick in y_ticks])
 
     # Save image and return fig (don't change this part)
     fig.savefig('box_plot.png')
