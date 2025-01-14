@@ -34,13 +34,34 @@ epochs = 15
 IMG_HEIGHT = 150
 IMG_WIDTH = 150
 
-train_image_generator = None
-validation_image_generator = None
-test_image_generator = None
+# Scale the tensors to have values from 0 to 1
+train_image_generator = ImageDataGenerator(rescale=1./255)
+validation_image_generator = ImageDataGenerator(rescale=1./255)
+test_image_generator = ImageDataGenerator(rescale=1./255)
 
-train_data_gen = None
-val_data_gen = None
-test_data_gen = None
+train_data_gen = train_image_generator.flow_from_directory(
+    directory=train_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    class_mode='binary',
+    batch_size=batch_size
+)
+
+val_data_gen = validation_image_generator.flow_from_directory(
+    directory=train_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    class_mode='binary',
+    batch_size=batch_size
+)
+
+# test folder has no subdirectories
+test_data_gen = test_image_generator.flow_from_directory(
+    directory=PATH,
+    classes=['test'],
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    class_mode=None,
+    batch_size=batch_size,
+    shuffle=False
+)
 
 def plotImages(images_arr, probabilities = False):
     fig, axes = plt.subplots(len(images_arr), 1, figsize=(5,len(images_arr) * 3))
@@ -61,30 +82,62 @@ def plotImages(images_arr, probabilities = False):
 sample_training_images, _ = next(train_data_gen)
 plotImages(sample_training_images[:5])
 
-train_image_generator = None
+# Augment the training data to prevent overfitting 
+# Apply random transformations to the existing images
+train_image_generator = ImageDataGenerator(
+    rescale=1./255,
+    rotation_range=40,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
 
-train_data_gen = train_image_generator.flow_from_directory(batch_size=batch_size,
-                                                     directory=train_dir,
-                                                     target_size=(IMG_HEIGHT, IMG_WIDTH),
-                                                     class_mode='binary')
+train_data_gen = train_image_generator.flow_from_directory(
+    batch_size=batch_size,
+    directory=train_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    class_mode='binary'
+)
 
 augmented_images = [train_data_gen[0][0][0] for i in range(5)]
-
 plotImages(augmented_images)
 
+# Create the convulational neural network
+# Input shape of data is 150, 150, 3
+# Process filters of size 3x3, increasing the number of filters
+# Perform the max pooling operation after each operation to shrink feature maps
 model = Sequential()
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
+model.add(Conv2D(128, (3, 3), activation='relu'))
+model.add(MaxPooling2D((2, 2)))
 
+# Flatten the data into a dense layer in order to classify it
+model.add(Flatten())
+model.add(Dense(64, activation='relu'))
+model.add(Dense(2))
 
-
-
-
-
-
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
 
 model.summary()
 
-history = None
+# Train the model
+history = model.fit(
+    x=train_data_gen,
+    steps_per_epoch=total_train // batch_size,
+    epochs=epochs,
+    validation_data=val_data_gen,
+    validation_steps=total_val // batch_size
+)
 
+# Visualize the accuracy and loss of the model
 acc = history.history['accuracy']
 val_acc = history.history['val_accuracy']
 
@@ -107,25 +160,26 @@ plt.legend(loc='upper right')
 plt.title('Training and Validation Loss')
 plt.show()
 
+# Use the model to predict whether an image is a cat or a dog
+# Extract images from the test data generator
+test_images = next(test_data_gen)
+# Get the predictions from the model and convert to integers
+probabilities = np.argmax(model.predict(test_data_gen), axis=1)
+plotImages(test_images, probabilities=probabilities)
+
+# Test to determine if the model accurately predicts at least 63% of the test
+# images
 answers =  [1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0,
             1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0,
             1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1,
             1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1,
             0, 0, 0, 0, 0, 0]
-
 correct = 0
 
 for probability, answer in zip(probabilities, answers):
     if round(probability) == answer:
         correct +=1
-
 percentage_identified = (correct / len(answers)) * 100
-
 passed_challenge = percentage_identified >= 63
 
-print(f"Your model correctly identified {round(percentage_identified, 2)}% of the images of cats and dogs.")
-
-if passed_challenge:
-    print("You passed the challenge!")
-else:
-    print("You haven't passed yet. Your model should identify at least 63% of the images. Keep trying. You will get it!")
+print(f"The model correctly identified {round(percentage_identified, 2)}% of the images of cats and dogs.")
